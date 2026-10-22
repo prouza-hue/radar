@@ -1,0 +1,15 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {filterLibraryRows,parseLibraryMedia,LIBRARY_MEDIA_STORAGE_KEY} from '../src/lib/libraryFilter.ts';
+import {sortLibraryRows} from '../src/lib/librarySort.ts';
+const row=(key,type,status,name,addedAt)=>({titleKey:key,title:{name,type},progress:{status},addedAt});
+const rows=[row('a','movie','seen','Arrival',10),row('b','tv','watching','Slow Horses',30),row('c','tv','seen','Odloučení',20),row('d','movie','want','Dune',40)];
+test('all keeps complete library',()=>assert.deepEqual(filterLibraryRows(rows,'all','all'),rows));
+test('movies only',()=>assert.deepEqual(filterLibraryRows(rows,'all','movie').map(x=>x.titleKey),['a','d']));
+test('series only',()=>assert.deepEqual(filterLibraryRows(rows,'all','tv').map(x=>x.titleKey),['b','c']));
+test('media AND watched status',()=>assert.deepEqual(filterLibraryRows(rows,'seen','tv').map(x=>x.titleKey),['c']));
+test('empty combinations stay empty',()=>assert.deepEqual(filterLibraryRows(rows,'watching','movie'),[]));
+test('filter then alpha sorting',()=>assert.deepEqual(sortLibraryRows(filterLibraryRows(rows,'all','tv'),'alpha').map(x=>x.titleKey),['c','b']));
+test('filter then added sorting',()=>assert.deepEqual(sortLibraryRows(filterLibraryRows(rows,'all','movie'),'added').map(x=>x.titleKey),['d','a']));
+test('invalid persisted preference safely defaults to all',()=>{for(const x of [null,undefined,'series','0',{},'MOVIE'])assert.equal(parseLibraryMedia(x),'all');assert.equal(parseLibraryMedia('movie'),'movie');assert.equal(parseLibraryMedia('tv'),'tv');});
+test('does not mutate original rows or overload other preferences',()=>{const before=JSON.stringify(rows);filterLibraryRows(rows,'seen','movie');assert.equal(JSON.stringify(rows),before);assert.equal(LIBRARY_MEDIA_STORAGE_KEY,'radar-library-media');});

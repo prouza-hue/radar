@@ -1,0 +1,9 @@
+/* New migration-only controls; original app styles remain unchanged. */
+.library-media {margin:0 0 12px;gap:6px}
+.library-media .filter {min-height:44px}
+.backup-panel {max-width:760px;padding:18px 0 32px}
+.backup-panel p {margin:10px 0;line-height:1.6}
+.backup-panel pre {white-space:pre-wrap;overflow-wrap:anywhere}
+.migration-code {font-size:28px;font-weight:700;letter-spacing:3px;margin:16px 0}
+.migration-actions {display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.migration-login-note {font-size:13px;color:hsl(var(--muted-foreground));line-height:1.5}

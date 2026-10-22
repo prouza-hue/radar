@@ -1,0 +1,85 @@
+name: Verify recovered Radar
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'scripts/**'
+      - 'tests/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.ts'
+      - 'tsconfig.json'
+      - '.github/workflows/verify-radar.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: radar-recovery-main
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      VITE_CONVEX_URL: https://ceaseless-chameleon-385.eu-west-1.convex.cloud
+      VITE_MIGRATION_MODE: 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Recover only checksum-pinned public assets and apply narrow adapters
+        run: |
+          node scripts/recover-public-assets.mjs
+          node scripts/apply-moje-filter.mjs
+          node scripts/apply-migration-access.mjs
+      - name: Install build tools
+        run: npm install --ignore-scripts
+      - name: Unit tests
+        run: npm test
+      - name: Build original frontend
+        run: npm run build
+      - name: Typecheck generated routes and client code
+        run: npm run typecheck
+      - name: Anonymous browser verification
+        run: |
+          npm install --no-save --ignore-scripts @playwright/test@1.56.1
+          npx playwright install --with-deps chromium
+          if [ -f .output/server/index.mjs ]; then
+            NITRO_PORT=4173 node .output/server/index.mjs > /tmp/radar-server.log 2>&1 &
+          else
+            npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/radar-server.log 2>&1 &
+          fi
+          for n in $(seq 1 45); do curl -fsS http://127.0.0.1:4173/ >/dev/null && break || sleep 2; done
+          node scripts/smoke-ui.mjs
+      - name: Persist verified assets and Moje change in the source repository
+        run: |
+          git config user.name 'Radar migration checks'
+          git config user.email 'radar-migration@users.noreply.github.com'
+          git add public src/components/personal-radar.tsx src/components/auth-dialog.tsx src/routeTree.gen.ts migration/PUBLIC_ASSETS.json package-lock.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'chore: checkpoint verified assets, media filter and reproducible frontend build'
+            git push origin HEAD:main
+          fi
+          git archive --format=zip --output=Radar-source.zip HEAD
+      - name: Store runnable build and source archive
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: radar-working-build
+          path: |
+            dist/
+            .output/public/
+            Radar-source.zip
+          include-hidden-files: true
+          retention-days: 14
+      - name: Store browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: radar-browser-evidence
+          path: qa-artifacts/
+          if-no-files-found: ignore
+          retention-days: 14
