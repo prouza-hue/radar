@@ -1,0 +1,7 @@
+export type Rating={source:"TMDB"|"TVmaze"|"IMDb"|"Rotten Tomatoes";value:number;scale:number;votes?:number;url?:string;kind?:"critics"|"audience"};
+export type Episode={id:string;season:number;number:number;name:string;date:string|null;instant?:string|null;rating:Rating|null;thumbnail?:string|null;synopsis?:string;summarySource?:"TMDB"|"TVmaze";imageSource?:"TMDB"|"TVmaze";tvmazeUrl?:string|null};
+export type Availability={name:string;type:"subscription"|"rent"|"buy"|"free";url:string;region:string};
+export type Title={key:string;id:number;source:"tmdb"|"tvmaze";type:"movie"|"tv";name:string;originalName:string;year:string;poster:string|null;backdrop:string|null;overview:string;genres:string[];runtime:number|null;status:string;premiere:string|null;releaseRegion:string|null;next:Episode|null;last:Episode|null;episodes:Episode[];seasons:number[];ratings:Rating[];availability:Availability[];originalNetwork:string|null;imdbId:string|null;sourceUrl:string;trailer:string|null;updatedAt:number;hotReason?:string;hotScore?:number;popularity?:number;votes?:number;tvmazeId?:number|null;tvmazeUrl?:string|null;notificationEpisodes?:Episode[];metadataVersion?:number};
+export interface RatingProvider {name:string; getRatings(externalIds:Record<string,string>):Promise<Rating[]>;}
+export interface MetadataProvider {search(query:string):Promise<Title[]>;detail(id:number,type:"movie"|"tv"):Promise<Title>;}
+export interface AvailabilityProvider {getAvailability(id:number,type:"movie"|"tv",region:string):Promise<Availability[]>;}
