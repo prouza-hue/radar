@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.output/
+.tanstack/
+.env
+.env.*
+!.env.example
+*.p12
+*.jks
+*.keystore
+*.pem
+private/
+backups/
+database-export/
+*.sqlite
+*.log
+.DS_Store
