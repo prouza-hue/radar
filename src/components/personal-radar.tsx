@@ -6,6 +6,7 @@ import {api} from "../../convex/_generated/api";
 import {today, fullDate, episodeCode, relative, episodeCount, seenCount} from "@/lib/format";
 import {dashboardKind} from "@/lib/personal-model";
 import {sortLibraryRows, type LibrarySortMode} from "@/lib/librarySort";
+import {filterLibraryRows, parseLibraryMedia, LIBRARY_MEDIA_STORAGE_KEY, type LibraryMediaFilter} from "@/lib/libraryFilter";
 import {TitleLink, PersonalButton, restoreScroll} from "./personal-controls";
 import {PushControls} from "./push-controls";
 import {QuickSeenButton} from "./episode-action";
@@ -27,6 +28,7 @@ export function PersonalRadar({dashboard = false}: {dashboard?: boolean}) {
   const {results, status, loadMore} = usePaginatedQuery(api.overview.page, {day}, {initialNumItems: 6});
   const timeline = useAction(api.catalog.timeline), detail = useAction(api.catalog.detail), history = useMutation(api.personal.includeLegacyHistory);
   const [filter, setFilter] = useState("all"), [sortMode, setSortMode] = useState<LibrarySortMode>("added");
+  const [mediaFilter, setMediaFilter] = useState<LibraryMediaFilter>("all");
   const [syncError, setSyncError] = useState(false), [retry, setRetry] = useState(0);
   const [historyDone, setHistoryDone] = useState(false), [held, setHeld] = useState<Record<string, any>>({});
   const attempts = useRef(new Set<string>()), timers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
@@ -51,6 +53,7 @@ export function PersonalRadar({dashboard = false}: {dashboard?: boolean}) {
       if (value && ["all", "watching", "want", "seen"].includes(value)) setFilter(value);
       const savedSort = localStorage.getItem("radar-library-sort");
       if (savedSort === "alpha" || savedSort === "added") setSortMode(savedSort);
+      setMediaFilter(parseLibraryMedia(localStorage.getItem(LIBRARY_MEDIA_STORAGE_KEY)));
     } catch { /* Optional persistence. */ }
     const releaseHeld = () => {for (const timer of timers.current.values()) clearTimeout(timer); timers.current.clear(); setHeld({});};
     window.addEventListener("radar-undone", releaseHeld);
@@ -121,7 +124,7 @@ export function PersonalRadar({dashboard = false}: {dashboard?: boolean}) {
 
   if (status === "LoadingFirstPage") return <div className="skeleton episodes-skeleton" aria-label="Načítání osobního přehledu"/>;
   const hasDashboardContent = catchup.length || ready.length || upcoming.length;
-  const filteredLibraryRows = rows.filter(r => filter === "all" || r.progress.status === filter);
+  const filteredLibraryRows = filterLibraryRows(rows, filter, mediaFilter);
   const visibleLibraryRows = sortLibraryRows(filteredLibraryRows, sortMode);
   return <section data-testid="personal-radar" data-state={complete ? "ready" : "loading"}>
     {!complete && <p className="rec-loading-note" role="status">Doplňujeme celý tvůj přehled…</p>}
@@ -134,7 +137,11 @@ export function PersonalRadar({dashboard = false}: {dashboard?: boolean}) {
       <p>{uncertain ? "Jakmile budeme mít úplný přehled, objeví se tu další krok." : "Nemáš nic rozkoukaného ani připraveného."}</p>
       <Link to="/hot">Objev něco dalšího</Link></div>
       : complete && <div className="personal-empty-small"><h3>Začni svým prvním titulem.</h3><Link to="/search">Najít film nebo seriál</Link></div>
-      : <><div className="library-toolbar">
+      : <><div className="filter-row library-media" role="group" aria-label="Typ titulů v Mých" data-testid="library-media-filter">
+        {([["all", "Vše"], ["tv", "Seriály"], ["movie", "Filmy"]] as const).map(([key,label]) =>
+          <button type="button" key={key} className={`filter ${mediaFilter === key ? "selected" : ""}`} aria-pressed={mediaFilter === key}
+            onClick={() => {setMediaFilter(key); try {localStorage.setItem(LIBRARY_MEDIA_STORAGE_KEY, key);} catch {}}}>{label}</button>)}
+      </div><div className="library-toolbar">
         <div className="library-filters" aria-label="Stav sledování">{[["all", "Vše"], ["watching", "Sleduju"], ["want", "Chci vidět"], ["seen", "Viděné"]].map(([key, label]) =>
           <button key={key} className={`filter ${filter === key ? "selected" : ""}`} aria-pressed={filter === key} onClick={() => {setFilter(key); try {sessionStorage.setItem("radar-library-filter", key);} catch {}}}>{label}</button>)}</div>
         <div className="library-sort" role="group" aria-label="Řazení">

@@ -1,3 +1,4 @@
+import {MigrationSignInDialog} from "./migration-sign-in";
 import {GoogleAuthButton} from "./google-auth-button";
 import {useState} from "react";
 import {useAuthActions} from "@convex-dev/auth/react";
@@ -5,6 +6,7 @@ import {Dialog,DialogContent,DialogHeader,DialogTitle,DialogDescription} from "@
 import {Mail,ArrowRight} from "lucide-react";
 export default function AuthDialog({open,onClose}:{open:boolean;onClose:()=>void}){
  const {signIn}=useAuthActions();const [email,setEmail]=useState("");const [step,setStep]=useState(false);const [busy,setBusy]=useState(false);const [error,setError]=useState("");
+ if(import.meta.env.VITE_MIGRATION_MODE === "true")return <MigrationSignInDialog open={open} onClose={onClose}/>;
  return <Dialog open={open} onOpenChange={o=>{if(!o)onClose()}}><DialogContent className="auth-dialog"><DialogHeader><div className="auth-icon"><Mail size={27}/></div><DialogTitle>Tvůj vlastní radar.</DialogTitle><DialogDescription>Ulož si filmy a seriály. Seznam najdeš na každém zařízení.</DialogDescription></DialogHeader>{!step&&<><GoogleAuthButton/><p className="auth-divider">nebo e-mailem</p></>}<form onSubmit={async e=>{e.preventDefault();setBusy(true);setError("");try{await signIn("resend-otp",new FormData(e.currentTarget));if(step)onClose();else setStep(true);}catch{setError(step?"Kód nesouhlasí nebo vypršel. Zkus to znovu.":"Kód se nepodařilo odeslat. Zkus to znovu.");}finally{setBusy(false)}}}>
  {step?<><p>Kód jsme poslali na <strong>{email}</strong>.</p><input name="email" type="hidden" value={email}/><label htmlFor="otp">Ověřovací kód</label><input id="otp" data-testid="otp" name="code" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} placeholder="000000" required autoFocus/></>:<><label htmlFor="email">Tvůj e-mail</label><input id="email" data-testid="email" name="email" type="email" autoComplete="email" placeholder="pavel@example.cz" value={email} onChange={e=>setEmail(e.target.value)} required autoFocus/></>}
  {error&&<p role="alert" className="error">{error}</p>}<button className="primary wide" data-testid="auth-submit" disabled={busy}>{busy?"Chvilku…":step?"Přihlásit se":"Poslat přihlašovací kód"}<ArrowRight size={18}/></button>{step&&<button type="button" className="quiet wide" onClick={()=>{setStep(false);setError("")}}>Použít jiný e-mail</button>}<small>Bez hesla. Bez zbytečné registrace.</small></form></DialogContent></Dialog>

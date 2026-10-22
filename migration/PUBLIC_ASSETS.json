@@ -1,0 +1,45 @@
+{
+  "kind": "original-public-build-not-source",
+  "assets": [
+    {
+      "path": "public/radar-original.css",
+      "url": "https://serialovy-radar.macaly.app/assets/index-BEZxYLFr.css",
+      "sha256": "10a85cb4ff13537d10ccbba92d973f9bf68bc1a1613b3f4eeb2fd19c4f2d4a4a"
+    },
+    {
+      "path": "public/tv-pair-original.css",
+      "url": "https://serialovy-radar.macaly.app/assets/tv-pair-CL1YC0bV.css",
+      "sha256": "f198bdc255f3ad806a39f1bedd3742421080708eb68c38793450a174f881e0a6"
+    },
+    {
+      "path": "public/theme.js",
+      "url": "https://serialovy-radar.macaly.app/theme.js",
+      "sha256": "a4ce9cf4ad2a7c39f3ac8b77c19f13938253f95135ad292395d2b02cc3d118cf"
+    },
+    {
+      "path": "public/favicon.svg",
+      "url": "https://serialovy-radar.macaly.app/favicon.svg",
+      "sha256": "8b54cd3f1614539f78f48b7c9bce1e4dc87aee188ac9b74c2f0ed2ea8b8ae648"
+    },
+    {
+      "path": "public/logo192.png",
+      "url": "https://serialovy-radar.macaly.app/logo192.png",
+      "sha256": "6510047d4dec05f523a62f95fb9f7d7b0c24b8682163ca8ba94bc7f78edfd999"
+    },
+    {
+      "path": "public/logo512.png",
+      "url": "https://serialovy-radar.macaly.app/logo512.png",
+      "sha256": "ca6c5cb1e0a5c5fb40322cdba569c150e85d12586d297cae5a76788c40f31c3e"
+    },
+    {
+      "path": "public/manifest.json",
+      "url": "https://serialovy-radar.macaly.app/manifest.json",
+      "sha256": "1d6a55d588dac375a3928fbe2886addd0ba19cb5a70fe6211a4c9208d55dd691"
+    },
+    {
+      "path": "public/downloads/Radar-TV-1.0.1.apk",
+      "url": "https://assets.macaly-user-data.dev/CRtkra9G4860EqBgyG8blgXv/souhypaclxa4ykckh7w2pp77/8tXug0KsI3WmHi-xgfCPu/radar-tv-1-0-1-xiIL3UI_.apk",
+      "sha256": "fba44a5d591a7c1e9dd43ba30e1ae094bf3d87d7614c56a98912b81be6e9accc"
+    }
+  ]
+}
